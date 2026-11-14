@@ -743,7 +743,7 @@ def main():
         ffmpeg=args.ffmpeg,
         fps=args.fps,
         bitrate_mbps=args.bitrate_mbps,
-        capture='ddagrab',  # validation shortcut; encoder_command is replaced above
+        capture='external',
         capture_fps=max(args.capture_fps, args.fps),
         display_index=0,
         show_cursor=True,

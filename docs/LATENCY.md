@@ -47,7 +47,7 @@ The supplied desktop test pattern requires FFplay from FFmpeg. On macOS, use the
 1. Start the desktop bridge from the repository root:
 
    ```powershell
-   python scripts/stream_desktop.py
+   python3 scripts/stream_linux.py --source kmsgrab --kmsgrab-rotate 270 --encoder libx264 --preset ultrafast --fps 100 --bitrate-mbps 40 --keyframe-seconds 3
    ```
 
 2. In another terminal, start the pattern:

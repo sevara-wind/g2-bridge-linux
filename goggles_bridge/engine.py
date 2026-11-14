@@ -16,7 +16,6 @@ import time
 from .annexb import AccessUnitStream, is_idr
 from .avi import AviPacketStream
 from .control import V1Stream
-from .mac_capture import helper_path
 from .pc_video import PcVideoPacketizer
 from .protocol import VideoPacketizer as MobileVideoPacketizer, PROFILES as MOBILE_PROFILES
 from .session import ControlSession, SessionLost
@@ -27,10 +26,8 @@ from .mobile_session import MobileSession, MobileSessionError
 # the frame size the goggles display
 WIDTH, HEIGHT = 1920, 1080
 NO_WINDOW = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
-# winget adds this folder to PATH, but terminals opened before the install miss it
-WINGET_LINKS = Path(os.environ.get('LOCALAPPDATA', ''), 'Microsoft', 'WinGet', 'Links')
 CHOICES = dict(fps=(60, 75, 90, 100), bitrate_mbps=(8, 10, 12, 16, 20, 24, 30, 32, 40),
-               capture=('gfxcapture', 'ddagrab', 'avfoundation', 'screencapturekit'), preset=('p1', 'p4'),
+               capture=('external',), preset=('p1', 'p4'),
                keyframe_seconds=(1, 3), h264_profile=('baseline', 'high'), usb_write_size=USB_WRITE_SIZES,
                route=('pc', 'mobile'))
 # Goggles 2 displayed frames up to 49 KB, but keyframes of about 65 KB froze it or left it
@@ -45,16 +42,16 @@ SILENT_SECONDS = 5
 
 
 def find_program(name):
-    return shutil.which(name) or shutil.which(name, path=str(WINGET_LINKS))
+    return shutil.which(name)
 
 
 @dataclass(frozen=True)
 class BridgeSettings:
-    dll: Path
-    ffmpeg: Path
+    dll: Path | None = None
+    ffmpeg: Path | None = None
     fps: int = 100
     bitrate_mbps: int | None = None
-    capture: str = 'gfxcapture'
+    capture: str = 'external'
     capture_fps: int | None = None
     display_index: int = 0
     show_cursor: bool = True
@@ -63,15 +60,13 @@ class BridgeSettings:
     low_latency: bool = True
     usb_write_size: int = 16384
     h264_profile: str = 'high'
-    # NVENC spatial and temporal adaptive quantization, off until its goggles latency is measured
     adaptive_quant: bool = False
     route: str = 'pc'
     mobile_profile: str = 'zv900'
 
     @property
     def nvenc(self):
-        """Windows captures encode with NVENC, the only encoder whose frame-size cap is verified on goggles."""
-        return self.capture in ('gfxcapture', 'ddagrab')
+        return False
 
     @property
     def max_frame_bytes(self):
@@ -83,7 +78,6 @@ class BridgeSettings:
             if type(value) is not type(choices[0]) or value not in choices:
                 raise ValueError(f'Unsupported {name}: {value}')
 
-        # the default bitrate depends on fps
         check('fps')
         for name in ('low_latency', 'adaptive_quant'):
             if type(getattr(self, name)) is not bool:
@@ -97,20 +91,14 @@ class BridgeSettings:
                 object.__setattr__(self, 'bitrate_mbps', 20)
             else:
                 object.__setattr__(self, 'bitrate_mbps',
-                                   min(32, self.fps*8*MAX_AVERAGE_FRAME_BYTES//1_000_000) if self.nvenc else 20)
-        if self.adaptive_quant and not self.nvenc:
-            raise ValueError('Adaptive quantization needs the Windows NVENC encoder')
-        # shortcut: only the NVENC buffer cap is verified on goggles, so macOS keeps the earlier
-        # 24 Mbps ceiling and its frames are never skipped; lift both once a Mac cap is verified
-        if not self.nvenc and self.route == 'pc' and self.bitrate_mbps > 24:
-            raise ValueError('macOS capture supports at most 24 Mbps')
+                                   min(40, self.fps * 8 * MAX_AVERAGE_FRAME_BYTES // 1_000_000))
         # The buffer cap bounds keyframes, but in CBR every frame averages bitrate/fps (PC route)
         if self.route == 'pc' and self.bitrate_mbps * 1_000_000 // (8 * self.fps) > MAX_AVERAGE_FRAME_BYTES:
             limit = max(b for b in CHOICES['bitrate_mbps'] if b * 1_000_000 // (8 * self.fps) <= MAX_AVERAGE_FRAME_BYTES)
             raise ValueError(f'At {self.fps} fps, use at most {limit} Mbps. '
                              f'{self.bitrate_mbps} Mbps makes frames too large for the goggles')
         if self.capture_fps is None:
-            object.__setattr__(self, 'capture_fps', 1000 if self.capture == 'gfxcapture' else 240)
+            object.__setattr__(self, 'capture_fps', 240)
         if type(self.capture_fps) is not int or not self.fps <= self.capture_fps <= 1000:
             raise ValueError('Capture ceiling must be between output fps and 1000')
         if type(self.display_index) is not int or self.display_index < 0:
@@ -118,97 +106,13 @@ class BridgeSettings:
 
 
 def encoder_command(settings, frames=0):
-    """Return the capture and encoder command; with frames, encode that many pictures and discard them."""
-    bitrate = settings.bitrate_mbps * 1_000_000
-    if settings.capture == 'screencapturekit':
-        command = [str(helper_path()), '--display', str(settings.display_index), '--fps', str(settings.fps),
-                   '--capture-fps', str(settings.capture_fps), '--bitrate', str(bitrate),
-                   '--keyframe-seconds', str(settings.keyframe_seconds), '--profile', settings.h264_profile,
-                   '--format', 'avi' if settings.low_latency else 'h264']
-        return (command + ([] if settings.show_cursor else ['--hide-cursor'])
-                + (['--frames', str(frames)] if frames else []))
-    # More NVENC bitrate must not enlarge the previous 20 Mbps buffer budget
-    vbv = min(min(bitrate, 20_000_000)*2//settings.fps, MAX_VBV_BITS) if settings.nvenc else bitrate*2//settings.fps
-    period = settings.fps*settings.keyframe_seconds
-    rate = ['-b:v', str(bitrate), '-maxrate', str(bitrate), '-bufsize', str(vbv), '-bf', '0',
-            '-g', str(period), '-level:v', '4.2' if settings.fps == 60 else '5.1',
-            '-flush_packets', '1']
-    command = [str(Path(settings.ffmpeg).resolve()), '-hide_banner', '-nostdin', '-loglevel', 'info']
-    if settings.capture == 'avfoundation':
-        # Scale Retina captures on the GPU, then pad to the frame the goggles expect
-        wide = 'gte(iw/ih,16/9)'
-        command += ['-init_hw_device', 'videotoolbox=vt', '-filter_hw_device', 'vt',
-                    '-f', 'avfoundation', '-capture_cursor', str(int(settings.show_cursor)),
-                    '-framerate', str(settings.capture_fps), '-pixel_format', 'nv12',
-                    '-i', f'Capture screen {settings.display_index}:none', '-r', str(settings.fps), '-fps_mode', 'cfr',
-                    '-vf', f"hwupload,scale_vt=w='if({wide},{WIDTH},-2)':h='if({wide},-2,{HEIGHT})',hwdownload,"
-                           f'format=nv12,pad={WIDTH}:{HEIGHT}:(ow-iw)/2:(oh-ih)/2',
-                    # low_delay enables low-latency rate control, which rejects plain baseline
-                    '-an', '-c:v', 'h264_videotoolbox', '-realtime', '1', '-prio_speed', '1', '-flags', '+low_delay',
-                    '-profile:v', 'constrained_baseline' if settings.h264_profile == 'baseline' else 'high', *rate,
-                    # VideoToolbox writes no AUDs, which both frame readers need
-                    '-bsf:v', 'h264_metadata=aud=insert']
-    else:
-        if settings.capture == 'gfxcapture':
-            source = (f'gfxcapture=monitor_idx={settings.display_index}:max_framerate={settings.capture_fps}'
-                      f':width={WIDTH}:height={HEIGHT}:resize_mode=scale_aspect:scale_mode=bicubic'
-                      f':capture_cursor={int(settings.show_cursor)}')
-            # ld(0) holds the next eligible timestamp with at most one frame of jitter credit
-            pacing = ("select='if(isnan(prev_selected_pts),st(0,pts*TB);1,"
-                      "if(gte((pts+0.5)*TB,ld(0)),"
-                      f"st(0,max(ld(0)+1/{settings.fps},pts*TB));1,0))',"
-                      # Compact capture gaps so CFR does not replay stale pictures to catch up
-                      f'setpts=N/({settings.fps}*TB):strip_fps=1')
-            command += ['-f', 'lavfi', '-i', source, '-vf', pacing,
-                        '-r', str(settings.fps), '-fps_mode', 'cfr']
-        else:
-            source = (f'ddagrab=output_idx={settings.display_index}:framerate={settings.fps}'
-                      f':draw_mouse={int(settings.show_cursor)}')
-            command += ['-f', 'lavfi', '-i', source, '-vf',
-                        f'hwdownload,format=bgra,scale={WIDTH}:{HEIGHT}:force_original_aspect_ratio=decrease:'
-                        f'flags=fast_bilinear:out_color_matrix=bt601,'
-                        f'pad={WIDTH}:{HEIGHT}:(ow-iw)/2:(oh-ih)/2,format=nv12']
-        command += ['-an', '-c:v', 'h264_nvenc', '-preset', settings.preset, '-tune', 'ull', '-rc', 'cbr',
-                    '-zerolatency', '1', '-delay', '0', '-profile:v', settings.h264_profile, *rate,
-                    '-aud', '1', '-forced-idr', '1',
-                    '-multipass', 'qres', '-intra-refresh', '1', '-single-slice-intra-refresh', '0',
-                    # refresh alone sends one IDR, and goggles that miss it stay black. The first
-                    # interval repeats it often, because a still screen can deliver only a few frames a second
-                    '-force_key_frames', f'expr:not(mod(n,{period}))+lt(n,{period})*not(mod(n,{settings.fps//10}))']
-        if settings.adaptive_quant:
-            command += ['-spatial-aq', '1', '-temporal-aq', '1']
-        if settings.low_latency:
-            command += ['-bsf:v', 'filter_units=remove_types=12']
-    if settings.low_latency:
-        command += ['-thread_queue_size', '1']
-    if frames:
-        return command + ['-frames:v', str(frames), '-f', 'null', '-']
-    return command + ['-f', 'avi' if settings.low_latency else 'h264', 'pipe:1']
+    """External capture pipelines provide their own encoder command (see stream_linux.py)."""
+    raise NotImplementedError('External capture requires a custom encoder command')
 
 
 def check_encoder(settings, run=subprocess.run):
-    """Encode one captured frame and return a setup problem, or None if the encoder can stream."""
-    command = encoder_command(settings, frames=1)
-    try:
-        result = run(command, capture_output=True, text=True, errors='replace', timeout=30, creationflags=NO_WINDOW)
-    except subprocess.TimeoutExpired:
-        return 'No frame was captured within 30 seconds'
-    if result.returncode == 0:
-        return None
-    details = '\n  '.join(result.stderr.strip().splitlines()[-3:])
-    if settings.capture == 'screencapturekit':
-        return f'Screen capture test failed.\n  {details}'
-    if settings.capture == 'avfoundation':
-        if 'Filter not found' in result.stderr or 'Encoder not found' in result.stderr:
-            return 'This FFmpeg build lacks VideoToolbox support. Update it with "brew upgrade ffmpeg"'
-        return ('FFmpeg test encode failed. In System Settings > Privacy & Security, allow screen recording '
-                f'for this terminal, and check the --display index.\n  {details}')
-    if 'Filter not found' in result.stderr:
-        return (f'This FFmpeg build has no {settings.capture} capture. '
-                'Update it with "winget upgrade Gyan.FFmpeg", or try --capture ddagrab')
-    if 'Encoder not found' in result.stderr:
-        return 'This FFmpeg build has no NVIDIA encoder. Install it with "winget install Gyan.FFmpeg"'
-    return f'FFmpeg test encode failed. Check the NVIDIA driver and --display index.\n  {details}'
+    """External capture pipelines handle their own encoder checks."""
+    return None
 
 
 def prioritize_gpu(process):

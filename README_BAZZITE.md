@@ -6,7 +6,7 @@
 
 ## Коротко
 
-Официальный `Ammaar-Alam/g2-bridge` умеет **захватывать и кодировать видео только на Windows и macOS**. Linux в upstream есть только на уровне USB-транспорта: libusb, udev-правило и `tools/research/probe_goggles.py` работают, а `scripts/stream_desktop.py` — нет.
+Этот репозиторий содержит GNU/Linux-адаптацию стриминга в DJI Goggles 2/Integra (USB, Virtual Flight), включая `scripts/stream_linux.py` (kmsgrab/portal/VAAPI/libx264), GTK-приложение и Flatpak.
 
 В этой копии добавлен Linux-слой, который использует тот же протокол, рукопожатие и пакетизатор g2-bridge:
 
