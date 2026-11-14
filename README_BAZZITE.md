@@ -2,6 +2,8 @@
 
 Основано на проекте [Ammaar-Alam/g2-bridge](https://github.com/Ammaar-Alam/g2-bridge) (автор: Ammaar Alam). Здесь собраны Linux/Bazzite/Steam Deck-адаптации и доработки поверх upstream.
 
+![G2 Bridge на GNU/Linux](docs/images/app-screenshot.png)
+
 ## Коротко
 
 Официальный `Ammaar-Alam/g2-bridge` умеет **захватывать и кодировать видео только на Windows и macOS**. Linux в upstream есть только на уровне USB-транспорта: libusb, udev-правило и `tools/research/probe_goggles.py` работают, а `scripts/stream_desktop.py` — нет.

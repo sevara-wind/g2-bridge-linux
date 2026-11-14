@@ -2,6 +2,8 @@
 
 > Based on [Ammaar-Alam/g2-bridge](https://github.com/Ammaar-Alam/g2-bridge) by Ammaar Alam, with additional Linux/Bazzite/Steam Deck adaptations (kmsgrab/Flatpak/Decky), UI changes, and local fixes.
 
+![G2 Bridge on GNU/Linux](docs/images/app-screenshot.png)
+
 Stream your Windows or Mac desktop to DJI Goggles 2 or DJI Goggles Integra over USB. The goggles use Virtual Flight mode with stock firmware. The simulator and controller run on the computer.
 
 The bridge detects the model when it connects:
