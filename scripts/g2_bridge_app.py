@@ -515,7 +515,7 @@ def main():
 
         screen_off_sw = Gtk.Switch(); screen_off_sw.set_active(bool(s.get('screen_off')))
         controls['screen_off'] = screen_off_sw
-        add_group_row(basic_group, 'Deck black screen', screen_off_sw, sep=False)
+        add_group_row(basic_group, 'Dim device screen', screen_off_sw, sep=False)
 
         settings_card.append(adv_lbl)
         settings_card.append(adv_group)
