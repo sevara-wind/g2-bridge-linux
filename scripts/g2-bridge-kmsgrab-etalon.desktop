@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=G2 Bridge (kmsgrab etalon)
+Comment=Stream desktop to DJI Goggles via host kmsgrab (benchmark path)
+Exec=/var/home/sevara/Documents/Default Project/g2-bridge/scripts/start_kmsgrab_etalon.sh
+Icon=io.github.sevara.G2Bridge
+Terminal=true
+Type=Application
+Categories=Utility;Video;
+Keywords=DJI;Goggles;kmsgrab;Steam Deck;
+StartupNotify=false

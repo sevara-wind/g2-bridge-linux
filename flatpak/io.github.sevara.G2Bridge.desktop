@@ -1,0 +1,32 @@
+[Desktop Entry]
+Name=G2 Bridge
+Comment=Stream the Steam Deck screen to DJI Goggles 2 / Integra
+Exec=g2-bridge-flatpak
+Icon=io.github.sevara.G2Bridge
+Terminal=false
+Type=Application
+Categories=Utility;Video;
+Keywords=DJI;Goggles;Steam Deck;screen;
+StartupNotify=false
+Actions=Terminal;RotateNone;Rotate90;Rotate180;Rotate270;
+
+[Desktop Action Terminal]
+Name=Open in Terminal
+Exec=g2-bridge-flatpak --cli
+Terminal=true
+
+[Desktop Action RotateNone]
+Name=No rotation
+Exec=g2-bridge-flatpak --portal-rotate none
+
+[Desktop Action Rotate90]
+Name=Rotate 90°
+Exec=g2-bridge-flatpak --portal-rotate 90
+
+[Desktop Action Rotate180]
+Name=Rotate 180°
+Exec=g2-bridge-flatpak --portal-rotate 180
+
+[Desktop Action Rotate270]
+Name=Rotate 270°
+Exec=g2-bridge-flatpak --portal-rotate 270

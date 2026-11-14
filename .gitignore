@@ -1,0 +1,31 @@
+# Local downloads, device captures, analysis databases, and scratch files.
+/work/
+/artifacts/
+/captures/
+/outputs/
+/build-dir/
+/.flatpak-builder/
+*.apk
+*.ipa
+*.pcap
+*.pcapng
+*.gpr
+*.rep/
+
+# Local configuration and generated files.
+.env
+.env.*
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+
+# Local agent handoff notes
+/AGENTS.md
+/.agents/
+
+# Flatpak bundles
+*.flatpak

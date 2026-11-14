@@ -1,0 +1,88 @@
+#!/bin/sh
+# Flatpak entry point (GUI by default). Bundled app code lives in /app/share/g2-bridge.
+set -eu
+
+APP=/app/share/g2-bridge
+WHEEL_DIR="$APP/vendor"
+PYTHONPATH="$APP:$WHEEL_DIR"
+for wheel in "$WHEEL_DIR"/*.whl; do
+    if [ -e "$wheel" ]; then
+        PYTHONPATH="$PYTHONPATH:$wheel"
+    fi
+done
+export PYTHONPATH
+export PYTHONUNBUFFERED=1
+
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "g2-bridge: python3 is missing from the Flatpak runtime" >&2
+    exit 1
+fi
+
+use_gui=true
+for arg in "$@"; do
+    case "$arg" in
+        --cli|--print-command|--check|--source|--source=*|--desktop-capture|--desktop-capture=*|-h|--help|-v|--verbose)
+            use_gui=false
+            ;;
+    esac
+done
+if [ "${G2_FORCE_CLI:-0}" = "1" ]; then
+    use_gui=false
+fi
+
+# strip --cli from args
+set -- "$@"
+count=$#
+i=1
+while [ $i -le $count ]; do
+    eval "a=\${$i}"
+    if [ "$a" != "--cli" ]; then
+        set -- "$@" "$a"
+    fi
+    i=$((i+1))
+done
+shift "$count"
+
+if [ "$use_gui" = "true" ] && [ -f "$APP/scripts/g2_bridge_app.py" ]; then
+    exec python3 "$APP/scripts/g2_bridge_app.py"
+fi
+
+# CLI fallback (etalon profile). kmsgrab needs host privileges; prefer deployed
+# runtime + host python/ffmpeg when running inside Flatpak.
+if [ -n "${FLATPAK_ID:-}" ]; then
+    RUNTIME="$HOME/.local/share/g2-bridge/runtime"
+    mkdir -p "$RUNTIME"
+    for name in goggles_bridge scripts vendor; do
+        if [ -d "$APP/$name" ]; then
+            rm -rf "$RUNTIME/$name"
+            cp -a "$APP/$name" "$RUNTIME/$name"
+        fi
+    done
+    # deploy bundled tools if present
+    if [ -d /app/bin ]; then
+        mkdir -p "$RUNTIME/bin"
+        cp -a /app/bin/. "$RUNTIME/bin/" 2>/dev/null || true
+        chmod -R 755 "$RUNTIME/bin" 2>/dev/null || true
+    fi
+    PP="$RUNTIME:$RUNTIME/vendor"
+    for wheel in "$RUNTIME"/vendor/*.whl; do
+        if [ -e "$wheel" ]; then
+            PP="$PP:$wheel"
+        fi
+    done
+    HOST_PATH="$RUNTIME/bin:${PATH:-/usr/bin:/bin}"
+    HOST_PY="${G2_BRIDGE_HOST_PYTHON:-python3}"
+    HOST_FFMPEG="${G2_BRIDGE_HOST_FFMPEG:-/usr/bin/ffmpeg}"
+    exec flatpak-spawn --host pkexec env PYTHONPATH="$PP" PATH="$HOST_PATH" "$HOST_PY" "$RUNTIME/scripts/stream_linux.py" \
+      --source desktop --desktop-capture kmsgrab \
+      --encoder libx264 --preset ultrafast \
+      --kmsgrab-rotate 270 --gpu-filters off \
+      --fps 100 --capture-fps 100 --bitrate-mbps 40 --keyframe-seconds 3 \
+      --ffmpeg "$HOST_FFMPEG" "$@"
+fi
+
+exec python3 "$APP/scripts/stream_linux.py" \
+  --source desktop --desktop-capture kmsgrab \
+  --encoder libx264 --preset ultrafast \
+  --kmsgrab-rotate 270 --gpu-filters off \
+  --fps 100 --capture-fps 100 --bitrate-mbps 40 --keyframe-seconds 3 "$@"

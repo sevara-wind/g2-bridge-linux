@@ -1,0 +1,20 @@
+{
+  "name": "g2-bridge-decky",
+  "version": "0.1.0",
+  "description": "Decky plugin for G2 Bridge",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w"
+  },
+  "devDependencies": {
+    "@decky/rollup": "^1.0.1",
+    "@decky/ui": "^4.0.0",
+    "@types/react": "18.2.0",
+    "@types/react-dom": "18.2.0",
+    "rollup": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "react-icons": "^5.0.0"
+  }
+}

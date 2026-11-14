@@ -1,0 +1,10 @@
+{
+  "name": "G2 Bridge",
+  "author": "sevara",
+  "flags": ["root"],
+  "publish": {
+    "tags": ["dji", "goggles", "stream", "usb"],
+    "description": "Stream Steam Deck screen to DJI Goggles (Integra/G2) in Game Mode.",
+    "image": ""
+  }
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.sevara.G2Bridge</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>G2 Bridge</name>
+  <summary>Stream a Linux desktop to DJI Goggles 2 / Integra</summary>
+  <icon type="stock">io.github.sevara.G2Bridge</icon>
+  <description>
+    <p>
+      Captures the desktop through the xdg-desktop-portal ScreenCast interface
+      and sends H.264 over the goggles' USB Virtual Flight link. The portal
+      path includes the mouse cursor and does not require root.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.sevara.G2Bridge.desktop</launchable>
+  <provides>
+    <binary>g2-bridge-flatpak</binary>
+  </provides>
+  <releases>
+    <release version="0.1.0" date="2026-11-12"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>
