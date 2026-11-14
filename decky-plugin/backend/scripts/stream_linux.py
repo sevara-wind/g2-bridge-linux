@@ -220,7 +220,8 @@ def build_command(args, encoder, frames=0, gpu_filters=None):
         cmd += ['-c:v', 'h264_vaapi', '-rc_mode', 'CBR', '-profile:v', 'high',
                 '-async_depth', '1', '-max_frame_size', str(MAX_FRAME_BYTES - 1000)]
     elif encoder == 'vulkan':
-        cmd += ['-c:v', 'h264_vulkan', '-rc_mode', 'cbr', '-profile:v', 'high']
+        cmd += ['-c:v', 'h264_vulkan', '-rc_mode', 'cbr', '-profile:v', 'high',
+                '-max_frame_size', str(MAX_FRAME_BYTES - 1000)]
     else:
         x264_params = (
             f'nal-hrd=cbr:scenecut=0:vbv-maxrate={bitrate // 1000}:vbv-bufsize={vbv // 1000}'
