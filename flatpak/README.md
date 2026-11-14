@@ -20,7 +20,7 @@ flatpak-builder --user --install --force-clean build-dir \
     flatpak/io.github.sevara.G2Bridge.yml
 ```
 
-If `flatpak-builder` is missing on Bazzite:
+If `flatpak-builder` is missing:
 
 ```bash
 sudo rpm-ostree install flatpak-builder

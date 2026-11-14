@@ -1,6 +1,6 @@
 # G2 Bridge — Decky Loader plugin (autonomous)
 
-Плагин для Decky Loader, чтобы запускать G2 Bridge (стрим на DJI Goggles Integra/G2) в **Game Mode** на Steam Deck / Bazzite. Плагин **автономный**: включает нужный Python-код (`goggles_bridge`, `stream_linux.py`, `pyusb`) и не требует внешнего каталога проекта/venv.
+Плагин для Decky Loader, чтобы запускать G2 Bridge (стрим на DJI Goggles Integra/G2) в **Game Mode** на GNU/Linux (Steam Deck). Плагин **автономный**: включает нужный Python-код (`goggles_bridge`, `stream_linux.py`, `pyusb`) и не требует внешнего каталога проекта/venv.
 
 ## Что делает
 - Кнопки **Start/Stop** для эталонного профиля (`kmsgrab` + `libx264 ultrafast`, 100 fps, keyframe 3s).

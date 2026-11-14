@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stream video INTO DJI Goggles 2 / Integra on Linux (Steam Deck / Bazzite).
+"""Stream video INTO DJI Goggles 2 / Integra on GNU/Linux.
 
 The upstream g2-bridge ships capture paths for Windows and macOS only. This
 script reuses its USB session, handshake and packetizer, and supplies a Linux

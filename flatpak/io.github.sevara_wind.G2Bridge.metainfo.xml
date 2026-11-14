@@ -11,8 +11,8 @@
       over USB using the goggles' Virtual Flight mode with stock firmware.
     </p>
     <p>
-      This is a GNU/Linux adaptation of Ammaar-Alam/g2-bridge, focused on Steam Deck / Bazzite
-      and kmsgrab-based capture, with a GTK interface and Flatpak packaging.
+      This is a GNU/Linux adaptation of Ammaar-Alam/g2-bridge, focused on kmsgrab-based
+      capture, with a GTK interface and Flatpak packaging.
     </p>
   </description>
   <launchable type="desktop-id">io.github.sevara_wind.G2Bridge.desktop</launchable>
