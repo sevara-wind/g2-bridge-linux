@@ -35,13 +35,3 @@ python -m unittest discover -s tests -v
 ```
 
 See the [video-delay measurement guide](docs/LATENCY.md), [PC protocol](docs/PROTOCOL.md), and [reverse-engineering data and tools](docs/research/README.md).
-
-## Contributing
-
-See the [contribution guide](CONTRIBUTING.md) to report bugs, submit changes, or share protocol research.
-
-## License
-
-Copyright (C) 2026 G2 Bridge contributors.
-
-The original code and documentation are licensed under the [GNU General Public License v3.0 only](LICENSE) (`GPL-3.0-only`). Third-party materials retain their own licenses.
