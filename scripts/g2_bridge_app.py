@@ -15,6 +15,7 @@ BITRATE_CHOICES = ['8', '10', '12', '14', '16', '18', '20', '24', '30', '32', '4
 FPS_CHOICES = ['60', '75', '90', '100']
 KEYFRAME_CHOICES = ['1', '3']
 PRESET_CHOICES = ['ultrafast', 'superfast', 'veryfast', 'faster', 'fast', 'medium']
+ENCODER_CHOICES = ['auto', 'libx264', 'vaapi', 'vulkan']
 ROTATION_CHOICES = ['none', '90', '180', '270']
 
 
@@ -30,6 +31,7 @@ def default_settings():
         'fps': '100',
         'keyframe_seconds': '3',
         'preset': 'ultrafast',
+        'encoder': 'libx264',
         'screen_off': False,
         'show_log': True,
         'quick_start': False,
@@ -55,6 +57,8 @@ def load_settings():
         s['keyframe_seconds'] = '3'
     if str(s.get('preset')) not in PRESET_CHOICES:
         s['preset'] = 'ultrafast'
+    if str(s.get('encoder')) not in ENCODER_CHOICES:
+        s['encoder'] = 'libx264'
     for k in ('screen_off', 'show_log', 'quick_start', 'settings_visible'):
         s[k] = bool(s.get(k, False)) if k != 'show_log' and k != 'settings_visible' else bool(s.get(k, True))
     s['quick_start'] = bool(s.get('quick_start', False))
@@ -135,10 +139,13 @@ def build_cmd(settings):
     fps = str(settings.get('fps', '100'))
     keyframe = str(settings.get('keyframe_seconds', '3'))
     preset = str(settings.get('preset', 'ultrafast'))
+    encoder = str(settings.get('encoder', 'libx264'))
+    if encoder not in ENCODER_CHOICES:
+        encoder = 'libx264'
     screen_off = bool(settings.get('screen_off'))
 
     args = ['--source', 'desktop', '--desktop-capture', 'kmsgrab',
-            '--encoder', 'libx264', '--preset', preset,
+            '--encoder', encoder, '--preset', preset,
             '--kmsgrab-rotate', rotation if rotation in ROTATION_CHOICES else '270',
             '--gpu-filters', 'off',
             '--fps', fps, '--capture-fps', fps,
@@ -513,6 +520,10 @@ def main():
         controls['keyframe_seconds'] = kf_combo
         add_group_row(basic_group, 'Keyframe', kf_combo)
 
+        enc_combo = make_combo(ENCODER_CHOICES, ['Auto', 'libx264', 'VAAPI', 'Vulkan'], s.get('encoder'))
+        controls['encoder'] = enc_combo
+        add_group_row(basic_group, 'Encoder', enc_combo)
+
         screen_off_sw = Gtk.Switch(); screen_off_sw.set_active(bool(s.get('screen_off')))
         controls['screen_off'] = screen_off_sw
         add_group_row(basic_group, 'Dim device screen', screen_off_sw, sep=False)
@@ -558,6 +569,7 @@ def main():
                 'rotation': get_selected(rot_combo, ROTATION_CHOICES),
                 'fps': get_selected(fps_combo, FPS_CHOICES),
                 'bitrate': get_selected(br_combo, BITRATE_CHOICES),
+                'encoder': get_selected(enc_combo, ENCODER_CHOICES),
                 'keyframe_seconds': get_selected(kf_combo, KEYFRAME_CHOICES),
                 'preset': get_selected(preset_combo, PRESET_CHOICES),
                 'screen_off': screen_off_sw.get_active(),
@@ -574,8 +586,10 @@ def main():
 
         def update_profile_label(st=None):
             st = st or state['settings']
+            enc = st.get('encoder', 'libx264')
+            enc_label = {'auto': 'Auto', 'libx264': 'libx264', 'vaapi': 'VAAPI', 'vulkan': 'Vulkan'}.get(enc, enc)
             profile_lbl.set_text(
-                f"kmsgrab · libx264 {st['preset']} · {st['fps']} fps · {st['bitrate']} Mbps · keyframe {st['keyframe_seconds']}s"
+                f"kmsgrab · {enc_label} {st['preset']} · {st['fps']} fps · {st['bitrate']} Mbps · keyframe {st['keyframe_seconds']}s"
             )
 
         def redraw_scene():
@@ -669,7 +683,7 @@ def main():
         start_btn.connect('clicked', start_stream)
         stop_btn.connect('clicked', stop_stream)
 
-        for combo in (rot_combo, fps_combo, br_combo, kf_combo, preset_combo):
+        for combo in (rot_combo, fps_combo, br_combo, kf_combo, enc_combo, preset_combo):
             if version == 4: combo.connect('notify::selected', lambda *_: persist_current())
             else: combo.connect('changed', lambda *_: persist_current())
         for sw in (screen_off_sw, show_log_sw, quick_sw):
