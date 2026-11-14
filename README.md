@@ -92,24 +92,33 @@ between frames. The 100 fps target has the shortest frame interval.
 Windows encoding uses gradual refresh to reduce periodic compression blur.
 For details, see the [quality measurements and reproduction steps](docs/research/WINDOWS_QUALITY.md).
 
-## Linux (Steam Deck / Bazzite)
+## GNU/Linux adaptation (Steam Deck / Bazzite)
 
-The capture paths above target Windows and macOS. The USB transport, udev rule and probe also work on Linux. This copy adds `scripts/stream_linux.py`, which reuses the same session, handshake and packetizer with Linux capture paths:
+This repository includes a GNU/Linux adaptation focused on low-latency streaming to DJI Goggles 2 / Integra over USB (Virtual Flight mode, stock firmware), with a GTK interface and Flatpak packaging.
 
-- **portal ScreenCast** through GStreamer/PipeWire (recommended on GNOME Wayland; needs no root, and works in the Flatpak);
-- FFmpeg + VAAPI/libx264 for a test pattern, a video file, a V4L2 device or `kmsgrab` as a fallback.
+![G2 Bridge on GNU/Linux](docs/images/app-screenshot.png)
+
+### Functionality
+- **Desktop streaming via `kmsgrab`** (KMS/DRM capture) encoded with `libx264` for a low-latency PC route.
+- **Configurable stream settings:** rotation, FPS, bitrate, keyframe interval, and x264 preset.
+- **Optional "Dim device screen"** mode to dim the device display while streaming and restore brightness on stop.
+- **GTK UI:** start/stop streaming, view logs, open log/GitHub links, and manage settings.
+- **Flatpak packaging:** manifests and metadata for local builds and Flathub-oriented submission (`flatpak/io.github.sevara_wind.G2Bridge.*`).
+
+### CLI (Linux capture paths)
+`scripts/stream_linux.py` reuses the same session, handshake and packetizer with Linux capture paths:
+
+- **portal ScreenCast** through GStreamer/PipeWire (GNOME Wayland; no root);
+- FFmpeg + VAAPI/libx264 for a test pattern, a video file, a V4L2 device or `kmsgrab`.
 
 ```bash
 ./setup_bazzite.sh
 .venv/bin/python scripts/stream_linux.py --source desktop   # portal
 .venv/bin/python scripts/stream_linux.py --source testsrc
-.venv/bin/python scripts/stream_linux.py --source v4l2 --device /dev/video0 \
-    --input-size 720x576 --input-fps 25 --fps 60 --bitrate-mbps 10
+.venv/bin/python scripts/stream_linux.py --source kmsgrab --kmsgrab-rotate 270 --encoder libx264 --preset ultrafast --fps 100 --bitrate-mbps 40 --keyframe-seconds 3
 ```
 
-A Flatpak manifest that runs the portal path with `--device=all` is in [`flatpak/`](flatpak/README.md).
-
-See [README_BAZZITE.md](README_BAZZITE.md) for installation, the Deck-as-USB-host cable setup and troubleshooting.
+See [README_BAZZITE.md](README_BAZZITE.md) for Bazzite/Steam Deck installation, cable/host-mode notes, and troubleshooting. For Flatpak details see [`flatpak/README.md`](flatpak/README.md).
 
 ## Run tests
 
