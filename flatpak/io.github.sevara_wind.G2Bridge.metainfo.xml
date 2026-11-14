@@ -12,7 +12,8 @@
     </p>
     <p>
       This is a GNU/Linux adaptation of Ammaar-Alam/g2-bridge, focused on kmsgrab-based
-      capture, with a GTK interface and Flatpak packaging.
+      capture, with a GTK interface and Flatpak packaging. Primarily tested on Steam Deck
+      with Bazzite OS.
     </p>
   </description>
   <launchable type="desktop-id">io.github.sevara_wind.G2Bridge.desktop</launchable>
