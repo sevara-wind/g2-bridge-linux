@@ -428,7 +428,7 @@ def main():
         bottom_links.set_margin_top(8)
         spacer_l = Gtk.Label(label=''); spacer_l.set_hexpand(True); bottom_links.append(spacer_l)
         logs_dir = Path(os.environ.get('XDG_STATE_HOME') or (Path.home()/'.local/state')) / 'g2-bridge' / 'logs'
-        for text, target in (('Open logs', ['xdg-open', str(logs_dir)]), ('GitHub', ['xdg-open', 'https://github.com/Ammaar-Alam/g2-bridge'])):
+        for text, target in (('Open logs', ['xdg-open', str(logs_dir)]), ('GitHub', ['xdg-open', 'https://github.com/sevara-wind/g2-bridge-linux'])):
             b = Gtk.Button(label=text)
             try:
                 b.add_css_class('link-btn'); b.add_css_class('flat')
