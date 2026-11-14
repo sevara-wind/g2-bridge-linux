@@ -241,6 +241,8 @@ def build_command(args, encoder, frames=0, gpu_filters=None):
         if not has_filter(args.ffmpeg, 'filter_units'):
             raise SystemExit('h264_vaapi CBR needs the filter_units bitstream filter, which this FFmpeg lacks')
         cmd += ['-bsf:v', 'filter_units=remove_types=12']
+    elif encoder == 'vulkan' and not args.no_aud_bsf:
+        cmd += ['-bsf:v', 'h264_metadata=aud=insert']
 
     if frames:
         cmd += ['-frames:v', str(frames), '-f', 'null', '-']
