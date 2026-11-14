@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.sevara_wind.G2Bridge</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>G2 Bridge</name>
+  <summary>Stream a GNU/Linux desktop to DJI Goggles 2 / Integra</summary>
+  <description>
+    <p>
+      G2 Bridge streams a GNU/Linux desktop to DJI Goggles 2 and DJI Goggles Integra
+      over USB using the goggles' Virtual Flight mode with stock firmware.
+    </p>
+    <p>
+      This is a GNU/Linux adaptation of Ammaar-Alam/g2-bridge, focused on Steam Deck / Bazzite
+      and kmsgrab-based capture, with a GTK interface and Flatpak packaging.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.sevara_wind.G2Bridge.desktop</launchable>
+  <icon type="stock">io.github.sevara_wind.G2Bridge</icon>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/sevara-wind/g2-bridge-linux/865bac741327185814b70f4406ab3e4d8031f294/docs/images/app-screenshot.png</image>
+      <caption>G2 Bridge GTK interface on GNU/Linux</caption>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">https://github.com/sevara-wind/g2-bridge-linux</url>
+  <url type="bugtracker">https://github.com/sevara-wind/g2-bridge-linux/issues</url>
+  <url type="vcs-browser">https://github.com/sevara-wind/g2-bridge-linux</url>
+  <developer id="io.github.sevara_wind">
+    <name>sevara-wind</name>
+  </developer>
+  <provides>
+    <binary>g2-bridge-flatpak</binary>
+  </provides>
+  <releases>
+    <release version="0.1.0-linux" date="2026-11-14"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>

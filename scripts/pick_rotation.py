@@ -12,7 +12,7 @@ def pick():
             from gi.repository import Gtk
             if gtk_ver == 4:
                 from gi.repository import Adw
-                app = Adw.Application(application_id='io.github.sevara.G2Bridge.Picker')
+                app = Adw.Application(application_id='io.github.sevara_wind.G2Bridge.Picker')
                 result = {'value': None, 'screen_off': '0'}
                 def on_activate(app):
                     win = Adw.ApplicationWindow(application=app, title='G2 Bridge')

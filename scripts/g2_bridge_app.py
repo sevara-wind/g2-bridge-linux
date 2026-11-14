@@ -291,11 +291,11 @@ def main():
 
     if version == 4:
         Adw, Gio, GLib, Gtk, Gdk = mods
-        app = Adw.Application(application_id='io.github.sevara.G2Bridge', flags=Gio.ApplicationFlags.FLAGS_NONE)
+        app = Adw.Application(application_id='io.github.sevara_wind.G2Bridge', flags=Gio.ApplicationFlags.FLAGS_NONE)
     else:
         _, Gio, GLib, Gtk, Gdk = mods
         Adw = None
-        app = Gtk.Application(application_id='io.github.sevara.G2Bridge', flags=Gio.ApplicationFlags.FLAGS_NONE)
+        app = Gtk.Application(application_id='io.github.sevara_wind.G2Bridge', flags=Gio.ApplicationFlags.FLAGS_NONE)
 
     state = {'proc': None, 'settings': load_settings(), 'stop_file': None, 'running_ui': False}
 
