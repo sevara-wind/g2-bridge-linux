@@ -39,4 +39,4 @@ modules:
     sources:
       - type: git
         url: https://github.com/sevara-wind/g2-bridge-linux.git
-        commit: bc604ae145fa4269ebc2b68f34016a4b39b3b367
+        commit: e556db4d76ada26d4c298077cd081479b85c7920
