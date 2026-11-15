@@ -220,8 +220,7 @@ def build_command(args, encoder, frames=0, gpu_filters=None):
         cmd += ['-c:v', 'h264_vaapi', '-rc_mode', 'CBR', '-profile:v', 'high',
                 '-async_depth', '1', '-max_frame_size', str(MAX_FRAME_BYTES - 1000)]
     elif encoder == 'vulkan':
-        cmd += ['-c:v', 'h264_vulkan', '-rc_mode', 'cbr', '-profile:v', 'high',
-                '-max_frame_size', str(MAX_FRAME_BYTES - 1000)]
+        cmd += ['-c:v', 'h264_vulkan', '-rc_mode', 'CBR', '-profile:v', 'high']
     else:
         x264_params = (
             f'nal-hrd=cbr:scenecut=0:vbv-maxrate={bitrate // 1000}:vbv-bufsize={vbv // 1000}'
@@ -242,8 +241,6 @@ def build_command(args, encoder, frames=0, gpu_filters=None):
         if not has_filter(args.ffmpeg, 'filter_units'):
             raise SystemExit('h264_vaapi CBR needs the filter_units bitstream filter, which this FFmpeg lacks')
         cmd += ['-bsf:v', 'filter_units=remove_types=12']
-    elif encoder == 'vulkan' and not args.no_aud_bsf:
-        cmd += ['-bsf:v', 'h264_metadata=aud=insert']
 
     if frames:
         cmd += ['-frames:v', str(frames), '-f', 'null', '-']

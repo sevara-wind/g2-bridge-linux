@@ -289,14 +289,13 @@ def main():
     if version == 0:
         os.execv(sys.executable, [sys.executable, str(STREAM_SCRIPT)] + sys.argv[1:])
 
-    app_id = os.environ.get('FLATPAK_ID') or 'io.github.sevara.G2Bridge'
     if version == 4:
         Adw, Gio, GLib, Gtk, Gdk = mods
-        app = Adw.Application(application_id=app_id, flags=Gio.ApplicationFlags.FLAGS_NONE)
+        app = Adw.Application(application_id='io.github.sevara.G2Bridge', flags=Gio.ApplicationFlags.FLAGS_NONE)
     else:
         _, Gio, GLib, Gtk, Gdk = mods
         Adw = None
-        app = Gtk.Application(application_id=app_id, flags=Gio.ApplicationFlags.FLAGS_NONE)
+        app = Gtk.Application(application_id='io.github.sevara.G2Bridge', flags=Gio.ApplicationFlags.FLAGS_NONE)
 
     state = {'proc': None, 'settings': load_settings(), 'stop_file': None, 'running_ui': False}
 

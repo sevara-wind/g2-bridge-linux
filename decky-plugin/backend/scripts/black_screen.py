@@ -25,7 +25,7 @@ def main():
     args = ap.parse_args()
 
     if GTK4:
-        app = Gtk.Application(application_id='io.github.sevara_wind.G2Bridge.BlackScreen')
+        app = Gtk.Application(application_id='io.github.sevara.G2Bridge.BlackScreen')
 
         def on_activate(app):
             win = Gtk.ApplicationWindow(application=app)
